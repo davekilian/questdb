@@ -70,6 +70,7 @@ struct instruction_t {
     union {
         int64_t ipayload;
         double dpayload;
+        int64_t i128payload[2];
     };
 };
 

@@ -308,7 +308,7 @@ public class CompiledFilterRegressionTest extends AbstractGriffinTest {
 
     @Test
     public void testHugeFilter() throws Exception {
-        final int N = 1024;
+        final int N = 680;
         final String ddl = "create table x as " +
                 "(select timestamp_sequence(400000000000, 500000000) as k," +
                 " rnd_long() i64 " +

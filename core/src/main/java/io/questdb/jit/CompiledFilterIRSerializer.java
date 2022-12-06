@@ -44,9 +44,13 @@ import java.util.Arrays;
  *
  * <pre>
  * IR instruction format:
- * | opcode | options | payload |
- * | int    | int     | long    |
+ * | opcode | options | payload | extended payload |
+ * | int    | int     | long    | long             |
  * </pre>
+ *
+ * Payloads 64 bits or less in size should use the payload field, leaving the
+ * extended payload field zeroed. For larger payloads, place the low 64 bits in
+ * 'payload' and the remaining high bits in 'extended payload'.
  *
  * The IR language uses stack machine semantics. It is as if each instruction
  * pushes its result onto a virtual stack, and each instruction that requires
@@ -506,24 +510,35 @@ public class CompiledFilterIRSerializer implements PostOrderTreeTraversalAlgo.Vi
         memory.putInt(offset, CompiledFilterIRSerializer.IMM);
         memory.putInt(offset + Integer.BYTES, type);
         memory.putDouble(offset + 2 * Integer.BYTES, payload);
+        memory.putLong(offset + 2 * Integer.BYTES + Double.BYTES, 0L);
     }
 
     private void putOperand(int opcode, int type, long payload) {
         memory.putInt(opcode);
         memory.putInt(type);
         memory.putLong(payload);
+        memory.putLong(0L);
+    }
+
+    private void putWideOperand(int opcode, int type, long payloadLo, long payloadHi) {
+        memory.putInt(opcode);
+        memory.putInt(type);
+        memory.putLong(payloadLo);
+        memory.putLong(payloadHi);
     }
 
     private void putOperand(long offset, int opcode, int type, long payload) {
         memory.putInt(offset, opcode);
         memory.putInt(offset + Integer.BYTES, type);
         memory.putLong(offset + 2 * Integer.BYTES, payload);
+        memory.putLong(offset + 2 * Integer.BYTES + Long.BYTES, 0L);
     }
 
     private void putOperator(int opcode) {
         memory.putInt(opcode);
         // pad unused fields with zeros
         memory.putInt(0);
+        memory.putLong(0L);
         memory.putLong(0L);
     }
 

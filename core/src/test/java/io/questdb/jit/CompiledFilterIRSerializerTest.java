@@ -62,7 +62,7 @@ public class CompiledFilterIRSerializerTest extends BaseFunctionFactoryTest {
     @BeforeClass
     public static void setUpStatic2() {
         bindVarFunctions = new ObjList<>();
-        irMemory = Vm.getCARWInstance(1024, 1, MemoryTag.NATIVE_JIT);
+        irMemory = Vm.getCARWInstance(2048, 1, MemoryTag.NATIVE_JIT);
         serializer = new CompiledFilterIRSerializer();
     }
 
@@ -736,7 +736,7 @@ public class CompiledFilterIRSerializerTest extends BaseFunctionFactoryTest {
 
         private void appendBindVariable(int type) {
             long index = irMem.getLong(offset);
-            offset += Long.BYTES;
+            offset += 2 * Long.BYTES;
             sb.append("(");
             sb.append(typeName(type));
             sb.append(" :");
@@ -746,7 +746,7 @@ public class CompiledFilterIRSerializerTest extends BaseFunctionFactoryTest {
 
         private void appendColumn(int type) {
             long index = irMem.getLong(offset);
-            offset += Long.BYTES;
+            offset += 2 * Long.BYTES;
             sb.append("(");
             sb.append(typeName(type));
             sb.append(" ");
@@ -756,7 +756,7 @@ public class CompiledFilterIRSerializerTest extends BaseFunctionFactoryTest {
 
         private void appendDoubleConst(int type) {
             double value = irMem.getDouble(offset);
-            offset += Double.BYTES;
+            offset += Double.BYTES + Long.BYTES;
             sb.append("(");
             sb.append(typeName(type));
             sb.append(" ");
@@ -766,7 +766,7 @@ public class CompiledFilterIRSerializerTest extends BaseFunctionFactoryTest {
 
         private void appendLongConst(int type) {
             long value = irMem.getLong(offset);
-            offset += Long.BYTES;
+            offset += 2 * Long.BYTES;
             sb.append("(");
             sb.append(typeName(type));
             sb.append(" ");
@@ -776,7 +776,7 @@ public class CompiledFilterIRSerializerTest extends BaseFunctionFactoryTest {
 
         private void appendOperator(int operator) {
             irMem.getLong(offset);
-            offset += Long.BYTES;
+            offset += 2 * Long.BYTES;
             sb.append("(");
             sb.append(operatorName(operator));
             sb.append(")");
