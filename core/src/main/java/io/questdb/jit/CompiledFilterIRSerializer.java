@@ -114,12 +114,13 @@ public class CompiledFilterIRSerializer implements PostOrderTreeTraversalAlgo.Vi
 
     // Options:
     // Data types
-    static final int I1_TYPE = 0;
-    static final int I2_TYPE = 1;
-    static final int I4_TYPE = 2;
-    static final int F4_TYPE = 3;
-    static final int I8_TYPE = 4;
-    static final int F8_TYPE = 5;
+    static final int I1_TYPE  = 0;
+    static final int I2_TYPE  = 1;
+    static final int I4_TYPE  = 2;
+    static final int F4_TYPE  = 3;
+    static final int I8_TYPE  = 4;
+    static final int F8_TYPE  = 5;
+    static final int I16_TYPE = 6;
 
     // contains <memory_offset, constant_node> pairs for backfilling purposes
     private final LongObjHashMap<ExpressionNode> backfillNodes = new LongObjHashMap<>();
@@ -295,6 +296,7 @@ public class CompiledFilterIRSerializer implements PostOrderTreeTraversalAlgo.Vi
                 return I8_TYPE;
             case ColumnType.DOUBLE:
                 return F8_TYPE;
+            case ColumnType.LONG128: // implemented for columns, but not bind variables
             default:
                 return UNDEFINED_CODE;
         }
@@ -323,6 +325,8 @@ public class CompiledFilterIRSerializer implements PostOrderTreeTraversalAlgo.Vi
                 return I8_TYPE;
             case ColumnType.DOUBLE:
                 return F8_TYPE;
+            case ColumnType.LONG128:
+                return I16_TYPE;
             default:
                 return UNDEFINED_CODE;
         }
@@ -534,6 +538,13 @@ public class CompiledFilterIRSerializer implements PostOrderTreeTraversalAlgo.Vi
         memory.putLong(offset + 2 * Integer.BYTES + Long.BYTES, 0L);
     }
 
+    private void putWideOperand(long offset, int opcode, int type, long payloadLo, long payloadHi) {
+        memory.putInt(offset, opcode);
+        memory.putInt(offset + Integer.BYTES, type);
+        memory.putLong(offset + 2 * Integer.BYTES, payloadLo);
+        memory.putLong(offset + 2 * Integer.BYTES + Long.BYTES, payloadHi);
+    }
+
     private void putOperator(int opcode) {
         memory.putInt(opcode);
         // pad unused fields with zeros
@@ -731,6 +742,9 @@ public class CompiledFilterIRSerializer implements PostOrderTreeTraversalAlgo.Vi
                 break;
             case I8_TYPE:
                 putOperand(offset, IMM, typeCode, geoHashPredicate ? GeoHashes.NULL : Numbers.LONG_NaN);
+                break;
+            case I16_TYPE:
+                putWideOperand(offset, IMM, typeCode, Numbers.LONG_NaN, Numbers.LONG_NaN);
                 break;
             case F4_TYPE:
                 putDoubleOperand(offset, typeCode, Float.NaN);
